@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../Header';
-import {Box, Button, Table, TableBody, TableCell, TableHead, TableRow, TextField, InputBase, Typography} from '@mui/material';
+import {Box, Button, CircularProgress, LinearProgress, Typography} from '@mui/material';
 import axios from 'axios';
 import NavigateIcon from '@mui/icons-material/NearMe';
 import WatchIcon from '@mui/icons-material/PlayCircleOutline';
-import SearchIcon from '@mui/icons-material/Search';
+import SpotsTable from '../SpotsTable';
+
 
 const useStyles = {
   backgroundStyle: {
@@ -19,17 +20,12 @@ const useStyles = {
     flexDirection: "column",
     marginLeft: "65px"
   },
-  spotsDataBox: {
+  dataBox: {
     marginTop: "20px",
     borderRadius: '20px',
     backgroundColor: '#fff',
     width: "1050px",
     height: "550px",
-  },
-  tableBox: {
-    height: "455px", 
-    overflow: "auto", 
-    scrollbarWidth: "thin"
   },
   detailBox: {
     marginLeft: "40px",
@@ -38,46 +34,6 @@ const useStyles = {
     backgroundColor: '#fff',
     width: "300px",
     height: "350px"
-  },
-  buttonStyle: {
-    margin: "20px 0px 20px 20px",
-    borderRadius: '20px',
-    height: "35px",
-    color: "#000",
-    border: "1px solid #979797",
-    "&:hover, &:focus" : {
-      color: "#C6C6A8",
-      border: "1px solid #C6C6A8"
-    },
-  },
-  searchStyle: {
-    margin: "20px 0px 20px 20px",
-    borderRadius: '20px',
-    paddingLeft: "10px",
-    color: "#000",
-    border: "1px solid #979797",
-    // "& .MuiOutlinedInput-root": {
-    //   borderRadius: '20px',
-    //   paddingLeft: "10px",
-    //   color: "#000",
-    //   border: "1px solid #979797",
-    //   "&:hover, &:focus" : {
-    //     color: "#C6C6A8",
-    //     border: "1px solid #C6C6A8"
-    //   },
-    //   '&.Mui-focused fieldset': {
-    //     borderColor: 'yellow',
-    //   },
-    // },
-    // "& .MuiOutlinedInput-notchedOutline": {
-    //   border: "none"
-    // }
-  },
-  tableHeader: {
-    "& .MuiTableCell-root": {
-      backgroundColor: "#F2F1F1",
-      borderCollapse:'collapse'
-    }
   },
   detailTitle: {
     padding: "10px 0px",
@@ -102,7 +58,7 @@ const useStyles = {
   }
 };
 
-interface ISpotsData {
+export interface ISpotsData {
   id: number;
   name: string;
   block: string;
@@ -111,113 +67,85 @@ interface ISpotsData {
   vacant: string
 }
 
-const ParkingPage: React.FC = () => {
+interface IProps {
+  title: string;
+  page: string;
+}
+
+const ParkingPage: React.FC<IProps> = (props) => {
+
+  const {title, page} = props;
 
   const [spotsData, setSpotsData] = useState<ISpotsData[]>([]);
-  const [tableData, setTableData] = useState<ISpotsData[]>([]);
+
   const [spotDetail, setSpotDetail] = useState<ISpotsData>();
 
-  const handleClick = (type: string) => {
-    if(type === "All") { setTableData(spotsData); }
-    else if(type === "Open") { setTableData(spotsData.filter(item => item['vacant'] === "Yes")); }
-    else if(type === "Occupied") { setTableData(spotsData.filter(item => item['vacant'] === "No")); }
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if(e.target.value) {
-      setTableData(spotsData.filter((item) => item['name'].toLowerCase().includes(e.target.value.toLowerCase()) ));
-    }
-    else {
-      setTableData(spotsData);
-    } 
-  };
-
-  const handleRowClick = (row: ISpotsData) => {
-    setSpotDetail(row);
-  };
-
-  useEffect(() => {
+  const getSpotsData = () => {
+    setIsLoading(true);
     axios.get('https://xm5kidlp3k.execute-api.us-east-2.amazonaws.com/default/spots')
       .then((response) => {
         if(response.status === 200) {
           setSpotsData(response.data);
-          setTableData(response.data);
         }
         else {
           throw response;
         }
+        setIsLoading(false);
       })
       .catch(function (error) {
         console.log(error);
-      })
+      });
+  };
+
+
+  useEffect(() => {
+    getSpotsData();
   },[]);
 
   useEffect(() => {
-    setSpotDetail(spotsData[0]);
-  },[spotsData]);
+    if(page === "find") {
+      setSpotDetail(spotsData[0]);
+    }
+  },[spotsData, page]);
 
-  console.log(tableData);
   return (
     <div style={useStyles.backgroundStyle}>
       <Header />
       <Box sx={useStyles.outerBox}>
-        <Typography variant="h5" sx={{marginLeft: "15px"}} children="Parking Spots" />
+        <Typography variant="h5" sx={{marginLeft: "15px"}} children={title} />
         <Box display="flex">
-          <Box sx={useStyles.spotsDataBox}>
-            <Box display="flex">
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="All" autoFocus onClick={() => handleClick("All")} />
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="Open" onClick={() => handleClick("Open")} />
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="Occupied" onClick={() => handleClick("Occupied")} />
-              <InputBase sx={[useStyles.searchStyle]} placeholder="Search" endAdornment={<SearchIcon />} onChange={(e) => handleChange(e)} />
-              {/* <TextField sx={[useStyles.searchStyle]} placeholder="Search" InputProps={{endAdornment:<SearchIcon />}} /> */}
-            </Box>
-            <Box sx={useStyles.tableBox}>
-              <Table stickyHeader>
-                <TableHead sx={useStyles.tableHeader}>
-                  <TableRow>
-                    <TableCell align="center"> Name </TableCell> <TableCell align="center"> Block </TableCell> <TableCell align="center"> Location </TableCell>
-                    <TableCell align="center"> Distance </TableCell> <TableCell align="center"> Vacant </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tableData.length > 0 ? tableData.map(row => (
-                    <TableRow key={row['id']} onClick={() => handleRowClick(row)}>
-                      <TableCell align="center">{row['name'] ? row['name'] : "-"}</TableCell>
-                      <TableCell align="center">{row['block'] ? row['block'] : "-"}</TableCell>
-                      <TableCell align="center">{row['location'] ? row['location'] : "-"}</TableCell>
-                      <TableCell align="center">3 mi</TableCell>
-                      <TableCell align="center" sx={row['vacant'] === "Yes" ? {color: "#6AAE1C"} : {color: "#AE401C"}}>{row['vacant']}</TableCell>
-                    </TableRow>))
-                    :
-                    <TableRow>
-                      <TableCell align="center" colSpan={5}>
-                        No results found.
-                      </TableCell>
-                    </TableRow> 
-                  }
-                </TableBody>
-              </Table>
-            </Box>
+          <Box sx={useStyles.dataBox}>
+            {
+              isLoading ? <LinearProgress color="inherit" />
+              :
+              (page === "find") && spotsData &&
+                <SpotsTable spotsData={spotsData} setSpotsData={setSpotsData} setSpotDetail={setSpotDetail} setIsLoading={setIsLoading} />
+            }
           </Box>
           <Box sx={useStyles.detailBox}>
             <Box sx={useStyles.detailTitle}>
-              <Typography variant="h6" children={spotDetail && spotDetail['name'].toUpperCase()} />
+              {(page === "find") && <Typography variant="h6" children={spotDetail && spotDetail['name'].toUpperCase()} />}
+              {!(page === "find") && <Typography variant="h6" children="Sim Building Parking " />}
             </Box>
             <Box sx={useStyles.detailContent}>
               <Box>
+                {!(page === "find") && <Typography children="Spots Available" />}
                 <Typography children="EV Charging" />
-                <Typography children="Last Occupied" />
-                <Typography children="Last Vacant" />
+                <Typography children={(page === "find") ? "Last Occupied" : "Distance"} />
+                <Typography children={(page === "find") ? "Last Vacant" : "Type"} />
               </Box>
               <Box>
-                <Typography children=": Yes" />
-                <Typography children=": 19:46" />
-                <Typography children=": 20:23" />
+                {!(page === "find") && <Typography children=": 11" />}
+                <Typography children={(page === "find") ? ": Yes" : ": Yes"} />
+                <Typography children={(page === "find") ? ": 19:46" : ": 3mi"} />
+                <Typography children={(page === "find") ? ": 20:23" : ": Outdoor"} />
               </Box>
             </Box>
             <Box sx={[useStyles.flexCol, {alignItems: "center"}]}>
-              <Button variant="contained" sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
-              <Button variant="contained" sx={useStyles.detailButtonStyle} startIcon={<WatchIcon/>} children="Watch Live"/>
+              <Button variant="contained" href="/navigate" sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
+              {(page === "find") && <Button variant="contained" sx={useStyles.detailButtonStyle} startIcon={<WatchIcon/>} children="Watch Live"/>}
             </Box>
           </Box>
         </Box>
