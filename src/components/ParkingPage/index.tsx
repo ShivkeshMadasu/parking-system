@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../Header';
-import {Box, Button, CircularProgress, LinearProgress, Typography} from '@mui/material';
+import {Box, Button, LinearProgress, Typography} from '@mui/material';
 import axios from 'axios';
 import NavigateIcon from '@mui/icons-material/NearMe';
 import WatchIcon from '@mui/icons-material/PlayCircleOutline';
 import SpotsTable from '../SpotsTable';
+import ParkingLotMap from '../ParkingLotMap';
+import LiveFeed from '../LiveFeed';
 
 
 const useStyles = {
@@ -55,6 +57,27 @@ const useStyles = {
     display: "flex",
     justifyContent: "center",
     margin: "20px 0px",
+  },
+  addressStyle: {
+    marginBottom: "10px",
+    padding: "10px",
+    backgroundColor: "#D8D8D8",
+    borderRadius: "8px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  locationDetailBox: {
+    borderRadius: "20px", 
+    backgroundColor: "#ebebda", 
+    height: "400px", 
+    border: "1px solid #D8D8D8",
+    overflow: "auto",
+    scrollbarWidth: "thin"
+  },
+  distanceStyle: {
+    textAlign: "center", 
+    borderBottom: "1px solid #D8D8D8"
   }
 };
 
@@ -82,6 +105,8 @@ const ParkingPage: React.FC<IProps> = (props) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [locationDetails, setLocationDetails] = useState<any>(null);
+
   const getSpotsData = () => {
     setIsLoading(true);
     axios.get('https://xm5kidlp3k.execute-api.us-east-2.amazonaws.com/default/spots')
@@ -99,6 +124,9 @@ const ParkingPage: React.FC<IProps> = (props) => {
       });
   };
 
+  const stripHtmlTags = (html:string) => {
+    return html.replace(/<[^>]*>?/gm, ' ');
+  }
 
   useEffect(() => {
     getSpotsData();
@@ -123,31 +151,67 @@ const ParkingPage: React.FC<IProps> = (props) => {
               (page === "find") && spotsData &&
                 <SpotsTable spotsData={spotsData} setSpotsData={setSpotsData} setSpotDetail={setSpotDetail} setIsLoading={setIsLoading} />
             }
+            {(page === "watch") &&<LiveFeed />}
+            {(page === "navigate") && <ParkingLotMap locationDetails={locationDetails} setLocationDetails={setLocationDetails} />}
           </Box>
-          <Box sx={useStyles.detailBox}>
-            <Box sx={useStyles.detailTitle}>
-              {(page === "find") && <Typography variant="h6" children={spotDetail && spotDetail['name'].toUpperCase()} />}
-              {!(page === "find") && <Typography variant="h6" children="Sim Building Parking " />}
-            </Box>
-            <Box sx={useStyles.detailContent}>
-              <Box>
-                {!(page === "find") && <Typography children="Spots Available" />}
-                <Typography children="EV Charging" />
-                <Typography children={(page === "find") ? "Last Occupied" : "Distance"} />
-                <Typography children={(page === "find") ? "Last Vacant" : "Type"} />
+          {
+            (page === "navigate") ?
+            <Box sx={useStyles.detailBox}>
+              {
+                locationDetails && 
+                <Box sx={{margin: "20px"}}>
+                  <Typography variant="body2" sx={useStyles.addressStyle} children={"A. " + locationDetails["start_address"]} />
+                  <Typography variant="body2" sx={useStyles.addressStyle} children={"B. " + locationDetails["end_address"]} />
+                </Box>
+              }
+              <Box sx={useStyles.locationDetailBox}>
+                {
+                  locationDetails &&
+                  <Box sx={{padding: "10px"}}>
+                    <Typography variant="body2" sx={useStyles.distanceStyle} children={locationDetails["distance"].text + ", About " + locationDetails["duration"].text} />
+                    {
+                      locationDetails["steps"].map(
+                        (step: any, index:number) => 
+                        {
+                          return (
+                            <Box display="flex">
+                              <Typography variant="body2" sx={{fontSize: "12px", width: "210px"}} children={index+1 + ". " + stripHtmlTags(step["instructions"])} />
+                              <Typography variant="body2" sx={{fontSize: "12px", paddingLeft: "20px"}} children={stripHtmlTags(step["distance"].text)} />
+                            </Box>
+                          );
+                        }
+                      )
+                    }
+                  </Box>
+                }
               </Box>
-              <Box>
-                {!(page === "find") && <Typography children=": 11" />}
-                <Typography children={(page === "find") ? ": Yes" : ": Yes"} />
-                <Typography children={(page === "find") ? ": 19:46" : ": 3mi"} />
-                <Typography children={(page === "find") ? ": 20:23" : ": Outdoor"} />
+            </Box>
+            :
+            <Box sx={useStyles.detailBox}>
+              <Box sx={useStyles.detailTitle}>
+                {(page === "find") && <Typography variant="h6" children={spotDetail && spotDetail['name'].toUpperCase()} />}
+                {!(page === "find") && <Typography variant="h6" children="Sim Building Parking " />}
+              </Box>
+              <Box sx={useStyles.detailContent}>
+                <Box>
+                  {!(page === "find") && <Typography children="Spots Available" />}
+                  <Typography children="EV Charging" />
+                  <Typography children={(page === "find") ? "Last Occupied" : "Distance"} />
+                  <Typography children={(page === "find") ? "Last Vacant" : "Type"} />
+                </Box>
+                <Box>
+                  {!(page === "find") && <Typography children=": 11" />}
+                  <Typography children={(page === "find") ? ": Yes" : ": Yes"} />
+                  <Typography children={(page === "find") ? ": 19:46" : ": 3mi"} />
+                  <Typography children={(page === "find") ? ": 20:23" : ": Outdoor"} />
+                </Box>
+              </Box>
+              <Box sx={[useStyles.flexCol, {alignItems: "center"}]}>
+                <Button variant="contained" href="/navigate" sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
+                {(page === "find") && <Button variant="contained" href="/watch" sx={useStyles.detailButtonStyle} startIcon={<WatchIcon/>} children="Watch Live"/>}
               </Box>
             </Box>
-            <Box sx={[useStyles.flexCol, {alignItems: "center"}]}>
-              <Button variant="contained" href="/navigate" sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
-              {(page === "find") && <Button variant="contained" sx={useStyles.detailButtonStyle} startIcon={<WatchIcon/>} children="Watch Live"/>}
-            </Box>
-          </Box>
+          }
         </Box>
       </Box>
     </div>
