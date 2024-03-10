@@ -87,7 +87,9 @@ export interface ISpotsData {
   block: string;
   location: string;
   distance: string;
-  vacant: string
+  vacant: string;
+  lat: number;
+  long: number
 }
 
 interface IProps {
@@ -207,7 +209,7 @@ const ParkingPage: React.FC<IProps> = (props) => {
                 </Box>
               </Box>
               <Box sx={[useStyles.flexCol, {alignItems: "center"}]}>
-                <Button variant="contained" href="/navigate" sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
+                <Button variant="contained" href={ spotDetail ? `/navigate?lat=${spotDetail['lat']}&long=${spotDetail['long']}` : "/navigate"} sx={useStyles.detailButtonStyle} startIcon={<NavigateIcon/>} children="Navigate"/>
                 {(page === "find") && <Button variant="contained" href="/watch" sx={useStyles.detailButtonStyle} startIcon={<WatchIcon/>} children="Watch Live"/>}
               </Box>
             </Box>

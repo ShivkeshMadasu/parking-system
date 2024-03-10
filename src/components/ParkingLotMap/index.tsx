@@ -87,7 +87,6 @@ const ParkingLotMap: React.FC<IParkingLotMap> = ({locationDetails, setLocationDe
                     const userLatLng = new window.google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                     map.setCenter(userLatLng);
                     calculateAndDisplayRoute(userLatLng, directions, renderer);
-                    console.log('agdvfsdbgf');
                 },
                 (error) => {
                     console.error('Error getting location:', error);
@@ -100,9 +99,10 @@ const ParkingLotMap: React.FC<IParkingLotMap> = ({locationDetails, setLocationDe
     };
 
     const calculateAndDisplayRoute = (userLatLng: any, directions: any, renderer: any) => {
+        const searchParams = new URLSearchParams(window.location.search);
         directions.route({
             origin: userLatLng,
-            destination: { lat: 33.30935854018332, lng: -111.673350662735 },
+            destination: { lat: Number(searchParams.get("lat")), lng: Number(searchParams.get("long")) },
             travelMode: 'DRIVING'
         }, (response: any, status: any) => {
             if (status === 'OK') {
