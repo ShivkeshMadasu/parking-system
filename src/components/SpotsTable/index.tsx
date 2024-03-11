@@ -137,7 +137,7 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
                       <TableCell align="center">{row['name'] ? row['name'] : "-"}</TableCell>
                       <TableCell align="center">{row['block'] ? row['block'] : "-"}</TableCell>
                       <TableCell align="center">{row['location'] ? row['location'] : "-"}</TableCell>
-                      <TableCell align="center">{row['distance'] + " mi"}</TableCell>
+                      <TableCell align="center">{row['distance'] + " ft"}</TableCell>
                       <TableCell align="center" sx={row['vacant'] === "Yes" ? {color: "#6AAE1C"} : {color: "#AE401C"}}>{row['vacant']}</TableCell>
                     </TableRow>))
                     :

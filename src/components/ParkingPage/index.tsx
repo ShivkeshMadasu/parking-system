@@ -89,7 +89,8 @@ export interface ISpotsData {
   distance: string;
   vacant: string;
   lat: number;
-  long: number
+  long: number;
+  ev: boolean;
 }
 
 interface IProps {
@@ -109,12 +110,17 @@ const ParkingPage: React.FC<IProps> = (props) => {
 
   const [locationDetails, setLocationDetails] = useState<any>(null);
 
+  let evAvailable = "No";
+
   const getSpotsData = () => {
     setIsLoading(true);
     axios.get('https://xm5kidlp3k.execute-api.us-east-2.amazonaws.com/default/spots')
       .then((response) => {
         if(response.status === 200) {
           setSpotsData(response.data);
+          evAvailable = response.data.map((parkingSpot:ISpotsData) => {
+            return parkingSpot['ev'] === true ? "Yes" : "No";
+          })
         }
         else {
           throw response;
@@ -135,11 +141,8 @@ const ParkingPage: React.FC<IProps> = (props) => {
   },[]);
 
   useEffect(() => {
-    if(page === "find") {
-      setSpotDetail(spotsData[0]);
-    }
+    setSpotDetail(spotsData[0]);
   },[spotsData, page]);
-
   return (
     <div style={useStyles.backgroundStyle}>
       <Header />
@@ -202,9 +205,9 @@ const ParkingPage: React.FC<IProps> = (props) => {
                   <Typography children={(page === "find") ? "Last Vacant" : "Type"} />
                 </Box>
                 <Box>
-                  {!(page === "find") && <Typography children=": 11" />}
-                  <Typography children={(page === "find") ? ": Yes" : ": Yes"} />
-                  <Typography children={(page === "find") ? ": 19:46" : ": 3mi"} />
+                  {!(page === "find") && <Typography children= { ": " + spotsData.length} />}
+                  <Typography children={(page === "find") ? ": Yes" : ": " + evAvailable} />
+                  <Typography children={(page === "find") ? ": 19:46" : `: ${spotsData.length && spotsData[0]?.distance}`} />
                   <Typography children={(page === "find") ? ": 20:23" : ": Outdoor"} />
                 </Box>
               </Box>
