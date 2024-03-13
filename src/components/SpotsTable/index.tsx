@@ -12,33 +12,28 @@ const useStyles = {
         height: "35px",
         color: "#000",
         border: "1px solid #979797",
-        "&:hover, &:focus" : {
+        "&:hover" : {
           color: "#C6C6A8",
           border: "1px solid #C6C6A8"
-        },
+        }, 
     },
+
+    buttonStyleActive: {
+      color: "#C6C6A8",
+      border: "4px solid #C6C6A8",
+      fontWeight: 1000,
+      "&:hover" : {
+        color: "#C6C6A8",
+        border: "4px solid #C6C6A8"
+      },
+    },
+    
     searchStyle: {
         margin: "20px 0px 20px 20px",
         borderRadius: '20px',
         paddingLeft: "10px",
         color: "#000",
         border: "1px solid #979797",
-        // "& .MuiOutlinedInput-root": {
-        //   borderRadius: '20px',
-        //   paddingLeft: "10px",
-        //   color: "#000",
-        //   border: "1px solid #979797",
-        //   "&:hover, &:focus" : {
-        //     color: "#C6C6A8",
-        //     border: "1px solid #C6C6A8"
-        //   },
-        //   '&.Mui-focused fieldset': {
-        //     borderColor: 'yellow',
-        //   },
-        // },
-        // "& .MuiOutlinedInput-notchedOutline": {
-        //   border: "none"
-        // }
     },
     iconStyle: {
         margin: "20px 10px 20px 20px",
@@ -59,6 +54,9 @@ const useStyles = {
       height: "455px", 
       overflow: "auto", 
       scrollbarWidth: "thin"
+    }, 
+    tableRow: {
+      cursor: "pointer"
     }
 }
 
@@ -71,12 +69,13 @@ interface ISpotsTable {
 
 const SpotsTable: React.FC<ISpotsTable> = (props) => {
     const {spotsData, setSpotsData, setSpotDetail, setIsLoading} = props;
+    const [selectedFilter, setSelectedFilter] = useState('All');
     const [tableData, setTableData] = useState<ISpotsData[]>([]);
 
     const handleClick = (type: string) => {
-        if(type === "All") { setTableData(spotsData); }
-        else if(type === "Open") { setTableData(spotsData.filter(item => item['vacant'] === "Yes")); }
-        else if(type === "Occupied") { setTableData(spotsData.filter(item => item['vacant'] === "No")); }
+        if(type === "All") { setTableData(spotsData); setSelectedFilter('All'); }
+        else if(type === "Open") { setTableData(spotsData.filter(item => item['vacant'] === "Yes")); setSelectedFilter('Open'); }
+        else if(type === "Occupied") { setTableData(spotsData.filter(item => item['vacant'] === "No")); setSelectedFilter('Occupied'); }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -116,11 +115,11 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
     return (
         <Box>
             <Box display="flex">
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="All" autoFocus onClick={() => handleClick("All")} />
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="Open" onClick={() => handleClick("Open")} />
-              <Button variant="outlined" sx={useStyles.buttonStyle} children="Occupied" onClick={() => handleClick("Occupied")} />
+              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "All" ? useStyles.buttonStyleActive : "")}} className={`buttonStyle ${selectedFilter === 'All' ? 'active' : ''}`} children="All" onClick={() => handleClick("All")} />
+              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Open" ? useStyles.buttonStyleActive : "")}} children="Open" onClick={() => handleClick("Open")} />
+              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Occupied" ? useStyles.buttonStyleActive : "")}} children="Occupied" onClick={() => handleClick("Occupied")} />
               <Box flexGrow={1} />
-              <InputBase sx={[useStyles.searchStyle]} placeholder="Search" endAdornment={<SearchIcon />} onChange={(e) => handleChange(e)} />
+              <InputBase sx={[useStyles.searchStyle]} placeholder="Search" endAdornment={<SearchIcon sx={{marginRight : "10px"}} />} onChange={(e) => handleChange(e)} />
               <IconButton sx={useStyles.iconStyle} onClick={() => getSpotsData()}> <RefreshIcon /> </IconButton> 
             </Box>
             <Box sx={useStyles.tableBox}>
@@ -133,7 +132,7 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
                 </TableHead>
                 <TableBody>
                   {tableData.length > 0 ? tableData.map(row => (
-                    <TableRow key={row['id']} onClick={() => handleRowClick(row)}>
+                    <TableRow key={row['id']} hover selected={false} sx={useStyles.tableRow} onClick={() => handleRowClick(row)}>
                       <TableCell align="center">{row['name'] ? row['name'] : "-"}</TableCell>
                       <TableCell align="center">{row['block'] ? row['block'] : "-"}</TableCell>
                       <TableCell align="center">{row['location'] ? row['location'] : "-"}</TableCell>

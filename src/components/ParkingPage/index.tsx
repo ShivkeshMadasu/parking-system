@@ -77,7 +77,8 @@ const useStyles = {
   },
   distanceStyle: {
     textAlign: "center", 
-    borderBottom: "1px solid #D8D8D8"
+    borderBottom: "2px solid #828282",
+    paddingBottom: "3px"
   }
 };
 
@@ -143,6 +144,7 @@ const ParkingPage: React.FC<IProps> = (props) => {
   useEffect(() => {
     setSpotDetail(spotsData[0]);
   },[spotsData, page]);
+  console.log(spotsData);
   return (
     <div style={useStyles.backgroundStyle}>
       <Header />
@@ -173,15 +175,15 @@ const ParkingPage: React.FC<IProps> = (props) => {
                 {
                   locationDetails &&
                   <Box sx={{padding: "10px"}}>
-                    <Typography variant="body2" sx={useStyles.distanceStyle} children={locationDetails["distance"].text + ", About " + locationDetails["duration"].text} />
+                    <Typography variant="subtitle2" sx={useStyles.distanceStyle} children={locationDetails["distance"].text + ", About " + locationDetails["duration"].text} />
                     {
                       locationDetails["steps"].map(
                         (step: any, index:number) => 
                         {
                           return (
-                            <Box display="flex">
-                              <Typography variant="body2" sx={{fontSize: "12px", width: "210px"}} children={index+1 + ". " + stripHtmlTags(step["instructions"])} />
-                              <Typography variant="body2" sx={{fontSize: "12px", paddingLeft: "20px"}} children={stripHtmlTags(step["distance"].text)} />
+                            <Box display="flex" sx={{paddingTop: "4px"}}>
+                              <Typography variant="body2" sx={{fontSize: "14px", width: "210px"}} children={index+1 + ". " + stripHtmlTags(step["instructions"])} />
+                              <Typography variant="body2" sx={{fontSize: "14px", paddingLeft: "20px"}} children={stripHtmlTags(step["distance"].text)} />
                             </Box>
                           );
                         }
