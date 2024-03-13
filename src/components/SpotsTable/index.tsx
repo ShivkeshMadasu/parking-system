@@ -6,6 +6,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const useStyles = {
+    elementBox: {
+      display: "flex",
+      '@media (max-width:767px)': {
+        flexDirection: "column",
+      }
+    },
     buttonStyle: {
         margin: "20px 0px 20px 20px",
         borderRadius: '20px',
@@ -16,8 +22,10 @@ const useStyles = {
           color: "#C6C6A8",
           border: "1px solid #C6C6A8"
         }, 
+        '@media (max-width:767px)': {
+          marginBottom: "0px",
+        }
     },
-
     buttonStyleActive: {
       color: "#C6C6A8",
       border: "4px solid #C6C6A8",
@@ -26,8 +34,7 @@ const useStyles = {
         color: "#C6C6A8",
         border: "4px solid #C6C6A8"
       },
-    },
-    
+    },  
     searchStyle: {
         margin: "20px 0px 20px 20px",
         borderRadius: '20px',
@@ -71,6 +78,7 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
     const {spotsData, setSpotsData, setSpotDetail, setIsLoading} = props;
     const [selectedFilter, setSelectedFilter] = useState('All');
     const [tableData, setTableData] = useState<ISpotsData[]>([]);
+    const [selectedRow, setSelectedRow] = useState(0);
 
     const handleClick = (type: string) => {
         if(type === "All") { setTableData(spotsData); setSelectedFilter('All'); }
@@ -87,8 +95,9 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
         } 
     };
 
-    const handleRowClick = (row: ISpotsData) => {
+    const handleRowClick = (row: ISpotsData, index: number) => {
         setSpotDetail(row);
+        setSelectedRow(index);
     };
 
     const getSpotsData = () => {
@@ -114,13 +123,17 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
 
     return (
         <Box>
-            <Box display="flex">
-              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "All" ? useStyles.buttonStyleActive : "")}} className={`buttonStyle ${selectedFilter === 'All' ? 'active' : ''}`} children="All" onClick={() => handleClick("All")} />
-              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Open" ? useStyles.buttonStyleActive : "")}} children="Open" onClick={() => handleClick("Open")} />
-              <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Occupied" ? useStyles.buttonStyleActive : "")}} children="Occupied" onClick={() => handleClick("Occupied")} />
+            <Box sx={useStyles.elementBox}>
+              <Box>
+                <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "All" ? useStyles.buttonStyleActive : "")}} className={`buttonStyle ${selectedFilter === 'All' ? 'active' : ''}`} children="All" onClick={() => handleClick("All")} />
+                <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Open" ? useStyles.buttonStyleActive : "")}} children="Open" onClick={() => handleClick("Open")} />
+                <Button variant="outlined" sx={{ ...useStyles.buttonStyle, ...(selectedFilter === "Occupied" ? useStyles.buttonStyleActive : "")}} children="Occupied" onClick={() => handleClick("Occupied")} />
+              </Box>
               <Box flexGrow={1} />
-              <InputBase sx={[useStyles.searchStyle]} placeholder="Search" endAdornment={<SearchIcon sx={{marginRight : "10px"}} />} onChange={(e) => handleChange(e)} />
-              <IconButton sx={useStyles.iconStyle} onClick={() => getSpotsData()}> <RefreshIcon /> </IconButton> 
+              <Box>
+                <InputBase sx={[useStyles.searchStyle]} placeholder="Search" endAdornment={<SearchIcon sx={{marginRight : "10px"}} />} onChange={(e) => handleChange(e)} />
+                <IconButton sx={useStyles.iconStyle} onClick={() => getSpotsData()}> <RefreshIcon /> </IconButton> 
+              </Box>
             </Box>
             <Box sx={useStyles.tableBox}>
               <Table stickyHeader>
@@ -131,8 +144,8 @@ const SpotsTable: React.FC<ISpotsTable> = (props) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tableData.length > 0 ? tableData.map(row => (
-                    <TableRow key={row['id']} hover selected={false} sx={useStyles.tableRow} onClick={() => handleRowClick(row)}>
+                  {tableData.length > 0 ? tableData.map((row, index) => (
+                    <TableRow key={index} hover selected={selectedRow === index ? true : false} sx={useStyles.tableRow} onClick={() => handleRowClick(row, index)}>
                       <TableCell align="center">{row['name'] ? row['name'] : "-"}</TableCell>
                       <TableCell align="center">{row['block'] ? row['block'] : "-"}</TableCell>
                       <TableCell align="center">{row['location'] ? row['location'] : "-"}</TableCell>

@@ -20,7 +20,19 @@ const useStyles = {
   outerBox: {
     display: "flex",
     flexDirection: "column",
-    marginLeft: "65px"
+    marginLeft: "65px",
+    height: "90vh",
+    '@media (max-width:767px)': {
+      marginLeft: "0px",
+      overflow: "auto",
+    }
+  },
+  innerBox: {
+    display: "flex",
+    height: "600px",
+    '@media (max-width:767px)': {
+      flexDirection: "column",
+    }
   },
   dataBox: {
     marginTop: "20px",
@@ -28,6 +40,11 @@ const useStyles = {
     backgroundColor: '#fff',
     width: "1050px",
     height: "550px",
+    '@media (max-width:767px)': {
+      width: "99vw",
+      margin: "2px",
+      height: "600px",
+    }
   },
   detailBox: {
     marginLeft: "40px",
@@ -35,7 +52,7 @@ const useStyles = {
     borderRadius: '20px',
     backgroundColor: '#fff',
     width: "300px",
-    height: "350px"
+    height: "350px",
   },
   detailTitle: {
     padding: "10px 0px",
@@ -44,14 +61,19 @@ const useStyles = {
   },
   flexCol: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   detailButtonStyle: {
     width: "200px",
     marginTop: "20px",
     backgroundColor: "#000",
     borderRadius: '8px',
-    height: "50px"
+    height: "50px",
+    '@media (max-width:767px)': {
+      marginTop: "0px",
+      marginBottom: "20px",
+      height: "40px",
+    }
   },
   detailContent: {
     display: "flex",
@@ -77,8 +99,7 @@ const useStyles = {
   },
   distanceStyle: {
     textAlign: "center", 
-    borderBottom: "2px solid #828282",
-    paddingBottom: "3px"
+    borderBottom: "1px solid #D8D8D8",
   }
 };
 
@@ -144,13 +165,12 @@ const ParkingPage: React.FC<IProps> = (props) => {
   useEffect(() => {
     setSpotDetail(spotsData[0]);
   },[spotsData, page]);
-  console.log(spotsData);
   return (
     <div style={useStyles.backgroundStyle}>
       <Header />
       <Box sx={useStyles.outerBox}>
         <Typography variant="h5" sx={{marginLeft: "15px"}} children={title} />
-        <Box display="flex">
+        <Box sx={useStyles.innerBox}>
           <Box sx={useStyles.dataBox}>
             {
               isLoading ? <LinearProgress color="inherit" />
@@ -175,15 +195,15 @@ const ParkingPage: React.FC<IProps> = (props) => {
                 {
                   locationDetails &&
                   <Box sx={{padding: "10px"}}>
-                    <Typography variant="subtitle2" sx={useStyles.distanceStyle} children={locationDetails["distance"].text + ", About " + locationDetails["duration"].text} />
+                    <Typography variant="body2" sx={useStyles.distanceStyle} children={locationDetails["distance"].text + ", About " + locationDetails["duration"].text} />
                     {
                       locationDetails["steps"].map(
                         (step: any, index:number) => 
                         {
                           return (
-                            <Box display="flex" sx={{paddingTop: "4px"}}>
-                              <Typography variant="body2" sx={{fontSize: "14px", width: "210px"}} children={index+1 + ". " + stripHtmlTags(step["instructions"])} />
-                              <Typography variant="body2" sx={{fontSize: "14px", paddingLeft: "20px"}} children={stripHtmlTags(step["distance"].text)} />
+                            <Box display="flex">
+                              <Typography variant="body2" sx={{fontSize: "12px", width: "210px"}} children={index+1 + ". " + stripHtmlTags(step["instructions"])} />
+                              <Typography variant="body2" sx={{fontSize: "12px", paddingLeft: "20px"}} children={stripHtmlTags(step["distance"].text)} />
                             </Box>
                           );
                         }
